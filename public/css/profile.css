@@ -86,13 +86,10 @@
 .profile-post-form-add-margin {
   margin-top: 0px;
 }
-.profile-content-top {
-  height: auto;
-  max-width: 700px;
-  align-self: center;
-}
+
 .profile-post-list {
-  width: 640px;
+  /* width: 100%; */
+  max-width: 640px;
   margin: 125px auto;
 }
 .profile-intro-box {

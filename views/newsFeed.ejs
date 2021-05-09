@@ -2,23 +2,26 @@
 
   <div class="container newsFeed-body">
     <!-- left block -->
-    <div class="sticky left-block">
-      <div class="left-right-block-header">WHO'S FOLLOWNIG</div>
+    <div style="position: fixed;" class="left-block">
+      <div class="left-right-block-header">Friend Suggestion</div>
       <div>
         <form class="form-inline my-2 my-lg-0 friend-list-search">
           <input class="form-control mr-sm-2 search-form" type="search" placeholder="🕵🏻‍♂️&nbsp; Search"
             aria-label="Search" />
         </form>
       </div>
-      <div class="friend-list">
-        <!-- //loop through friend-list TODO have to change who is following-->
-        <div class="friend-list-item testbg">
-          <img class="avatar avatar-margin dis-inline-block" src="<%= `users/${user.userPhoto}` %>" alt="" />
-          <span class="dis-inline-block">username</span>
-          <span class="add-friend-option">
-            <a class="btn-with-a" href="">Add friend</a>
-          </span>
-        </div>
+      <div class="suggestionList">
+        <% for(var list of friendSuggestion) { %>
+          <div class="friend-list-item addFriendDiv">
+            <img class="avatar avatar-margin dis-inline-block" src="<%= `users/${list.userPhoto}` %>" alt="" />
+            <span class="dis-inline-block show-username">
+              <%= list.username%>
+            </span>
+            <span class="add-friend-option">
+              Add friend
+            </span>
+          </div>
+          <% }%>
       </div>
     </div>
 
@@ -60,21 +63,37 @@
       </div>
       <div class="friend-list">
         <% for(var list of friendlist) { %>
-          <div class="friend-list-item">
-            <img class="avatar avatar-margin dis-inline-block" src="<%= `users/${list.userPhoto}` %>" alt="" />
+          <% if(list.requestedUserId.id !=user.id) {%>
+            <div class="friend-list-item">
+              <img class="avatar avatar-margin dis-inline-block" src="<%= `users/${list.requestedUserId.userPhoto}` %>"
+                alt="" />
 
-            <span class="dis-inline-block show-username">
-              <%= list.username %>
-            </span>
-            <span class="friend-status">
-              <a class="btn-with-a" href="">status here "</a>
-            </span>
-          </div>
-          <% }%>
+              <span class="dis-inline-block show-username">
+                <%= list.requestedUserId.username %>
+              </span>
+              <span class="friend-status">
+                <a class="btn-with-a" href="">status here "</a>
+              </span>
+            </div>
+            <% } %>
+              <% if(list.acceptedUserId.id !=user.id) {%>
+                <div class="friend-list-item">
+                  <img class="avatar avatar-margin dis-inline-block"
+                    src="<%= `users/${list.acceptedUserId.userPhoto}` %>" alt="" />
+
+                  <span class="dis-inline-block show-username">
+                    <%= list.acceptedUserId.username %>
+                  </span>
+                  <span class="friend-status">
+                    <a class="btn-with-a" href="">status here "</a>
+                  </span>
+                </div>
+                <% } %>
+                  <% } %>
       </div>
-      <div class="footer-data">
-        bunty noob hai auor rahega in ejs line no 86 and \in css 452
-      </div>
+      <!-- <div class="footer-data">
+        bun
+      </div> -->
     </div>
 
     <!-- center block -->
@@ -113,50 +132,57 @@
           </center>
 
         </td>
-        <% for(var list of friendStory) { %>
-          <% for(var ele of list.userStory) {%>
-            <td>
+        <!-- himself or herself story -->
+        <td class="statusHoverEffect">
+          <% for(var ele of userStory) {%>
+            <!-- <td> -->
+            <div>
               <img src="<%= `story/${ele.storyPhoto}` %>" alt="status not found" class="status-img" />
               <center>
                 <div class="story-username">
-                  <%= list.firstname%>
+                  <%= ele.authorFirstName%>
                 </div>
               </center>
-            </td>
+            </div>
+            <!-- </td> -->
             <%}%>
+        </td>
+        <!-- friend story -->
+        <% for(var list of friendStory) { %>
+          <td class="statusHoverEffect">
+            <% for(var ele of list) {%>
+              <div>
+                <img src="<%= `story/${ele.storyPhoto}` %>" alt="status not found" class="status-img" />
+                <center>
+                  <div class="story-username">
+                    <%= ele.authorFirstName%>
+                  </div>
+                </center>
+              </div>
               <%}%>
+          </td>
+          <%}%>
       </table>
     </div>
     <div class="post-form">
       <div class="post-form-l1">
         <img class="avatar avatar-margin" src="<%= `users/${user.userPhoto}` %>" alt="profileD.png not found!" />
-        <!-- <form action=""> -->
-        <!-- <input class="post-input" type="button" placeholder="What's on your mind, username ?" aria-label="post" /> -->
+
         <button class="post-input" aria-label="post" type="button">
           What's on your mind, <%= user.firstname%> ?
         </button>
-        <hr style="color: white" />
+        <hr style="color: white;margin-bottom: 8px;margin-top: 15px;" />
         <div class="row">
-          <div class="col-4">
-            <a href="#" class="btn-with-a">
-              <!-- <img src="" alt="!"> -->
-              Photo/Video
-            </a>
+          <div class="col-4 post-options">
+            Photo/Video
           </div>
-          <div class="col-4">
-            <a href="#" class="btn-with-a">
-              <!-- <img src="" alt="!">  -->
-              Tag Friends
-            </a>
+          <div class="col-4 post-options">
+            Tag Friends
           </div>
-          <div class="col-4">
-            <a href="#" class="btn-with-a">
-              <!-- <img src="" alt="!">  -->
-              Feeling/Activity
-            </a>
+          <div class="col-4 post-options">
+            Feeling/Activity
           </div>
         </div>
-        <!-- </form> -->
       </div>
     </div>
 
@@ -165,9 +191,10 @@
       <%- include('partials/postListContent.ejs') %>
     </div>
   </div>
+
   <!-- onwards post modal -->
   <%- include('partials/postModalForm.ejs') %>
-
     <!-- till here -->
+
     <script src="/javascripts/newsfeed.js"></script>
     <%- include('partials/footer.ejs') %>

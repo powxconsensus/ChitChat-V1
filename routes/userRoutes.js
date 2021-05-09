@@ -37,9 +37,8 @@ router
   .post(UserController.CreateUser);
 
 router
-  .route('/:id')
+  .route('/:id/:type?')
   .get(authController.protectAccess, UserController.GetUser)
-
   .delete(
     authController.protectAccess,
     authController.restrictTo('admin'),
@@ -47,8 +46,8 @@ router
   );
 
 router.use(authController.protectAccess);
-router.route('/:id/addFriend').patch(UserController.addFriend);
-router.route('/:id/removeFriend').patch(UserController.removeFriend);
+router.route('/addFriend/:userName').patch(UserController.addFriend);
+router.route('/removeFriend/:userName').patch(UserController.removeFriend);
 
 module.exports = router;
 // .patch(

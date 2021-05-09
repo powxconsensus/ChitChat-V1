@@ -25,6 +25,7 @@
 }
 .nav-con {
   padding: 1px 20px 0px 20px;
+  box-shadow: 0px 1px 0px 0.05em rgb(143, 147, 151);
 }
 .sticky {
   position: -webkit-sticky;
@@ -47,7 +48,7 @@
 }
 @media screen and (min-width: 1200px) {
   .left-block {
-    height: 100vh;
+    height: 87%;
     width: 265px;
     margin-left: -50px;
     background-color: rgb(36, 37, 39);
@@ -74,12 +75,8 @@
     margin-right: -50px;
     float: right;
     display: block;
-    position: relative;
-    position: sticky;
     padding: 10px;
-    position: -webkit-sticky;
     background-color: rgb(36, 37, 39);
-    position: sticky;
     margin-top: 390px;
     margin-right: -265px;
     border-radius: 8px;
@@ -101,6 +98,13 @@
     overflow-y: scroll;
     border-radius: 10px;
   }
+  .suggestionList {
+    margin-top: 15px;
+    max-height: 80%;
+    overflow-y: scroll;
+    border-radius: 10px;
+    padding-bottom: 15px;
+  }
   .friend-list-item {
     height: 70px;
   }
@@ -111,6 +115,15 @@
     display: block;
     margin-left: 75px;
     margin-top: -20px;
+    cursor: pointer;
+    color: rgb(49, 49, 238);
+    font-family: cursive;
+    font-size: 14px;
+  }
+  .add-friend-option:hover {
+    color: blue;
+    text-shadow: 2px blue;
+    font-size: 15px;
   }
   .friend-status {
     display: block;
@@ -132,15 +145,15 @@
   margin-top: -25px;
 }
 .list-of-status {
+  background-color: rgb(36, 37, 39);
   margin: 115px auto;
   max-width: 640px;
-  background-color: rgb(36, 37, 39);
-  border-radius: 8px;
+  height: 210px;
+  border-radius: 10px;
   border-color: black;
   border-width: 5px;
-  height: 210px;
-  overflow-x: auto;
 }
+
 .status-img {
   height: 200px;
   width: 150px;
@@ -167,8 +180,8 @@
 .post-input {
   /* FIXME */
   /* max-width: 512px; */
-  width: 80%;
-  margin-top: 15px;
+  width: calc(100% - 80px);
+  margin-top: 10px;
   margin-left: 0px;
   height: 50px;
   border-radius: 10px;
@@ -194,14 +207,24 @@
 .btn-with-a {
   text-decoration: none;
 }
+.post-options {
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  cursor: pointer;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.post-options:hover {
+  background-color: rgb(58, 59, 61);
+  border-radius: 5px;
+  font-size: 17px;
+}
 .post-list {
   max-width: 640px;
   margin: 125px auto;
-  /* background-color: orange; */
   background-color: rgb(24, 25, 26);
   height: auto;
-  /* height: 20000px; */
-
   padding-bottom: 50px;
   padding-top: 1px;
 }
@@ -279,7 +302,7 @@
   margin-top: 15px;
   background-color: rgb(58, 59, 60);
   border-radius: 20px;
-  width: 500px;
+  width: calc(100% - 100px);
   border-style: groove;
   border-width: 0px 0px 1px 0px;
   min-height: 40px;
@@ -294,13 +317,12 @@
 }
 .feature-on-comment {
   margin-left: 90px;
-  /* background-color: honeydew; */
   border-radius: 100px;
   background-color: rgb(58, 59, 60);
   border-width: 2px;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
-  width: 480px;
+  width: calc(100% - 120px);
   min-height: 20px;
   margin-top: -9px;
   color: rgb(228, 228, 228);
@@ -310,7 +332,7 @@
   margin-bottom: -6px;
   border-radius: 8px;
   height: auto;
-  max-width: 640px;
+  width: 100%;
   background-color: rgb(36, 37, 39);
 }
 .Comment-Post-Avatar {
@@ -333,8 +355,9 @@
 
 .commentPostData {
   /* width: 480px; */
-  width: 76%;
+  width: calc(100% - 135px);
   margin-left: 10px;
+  margin-right: 5px;
   border-radius: 15px;
   height: 30px;
   padding-top: 5px;
@@ -349,43 +372,19 @@
   outline: none;
 }
 
-@media screen and (max-width: 800px) {
-  .comment-section {
-    max-width: 380px;
-  }
-  .feature-on-comment {
-    width: 360px;
-  }
-  .commentPostData {
-    width: 72%;
-  }
-}
-@media screen and (min-width: 1000px) {
-  .comment-section {
-    width: 535px;
-  }
-  .feature-on-comment {
-    width: 510px;
-  }
-  .commentPostData {
-    width: 78%;
-  }
-}
 .add-on {
   font-family: monospace;
-  font-size: 18px;
+  font-size: 16px;
   padding-top: 10px;
   text-decoration: none;
   font-weight: 300;
-  vertical-align: auto;
   padding-bottom: 10px;
-  align-content: center;
-  padding-left: 65px;
-  margin-left: -2px;
+  text-align: center;
 }
 .add-on:hover {
   background-color: rgb(58, 59, 61);
   border-radius: 5px;
+  font-size: 17px;
 }
 .comment-inherited {
   margin-top: 5px;
@@ -393,8 +392,6 @@
   border-radius: 5px;
   border-style: groove;
   border-width: 1px;
-  /* z-index: 1; */
-  /* width: 34vw; */
   max-width: 297px;
   min-height: 40px;
   margin-left: 125px;
@@ -665,4 +662,10 @@
 .cancel-confirm-story:hover {
   background-color: rgb(81, 83, 82);
   outline: thin;
+}
+.statusHoverEffect {
+  transition: transform 0.2s;
+}
+.statusHoverEffect:hover {
+  transform: scale(1.1);
 }

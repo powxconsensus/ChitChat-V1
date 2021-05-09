@@ -6,7 +6,9 @@ const authController = require('./../Controller/authController');
 const userController = require('./../Controller/userController');
 const Post = require('./../models/postModel');
 const axios = require('axios');
-
+const AppError = require('../utils/appError');
+const Story = require('../models/storyModel');
+const userFriends = require('../models/userFriends');
 const router = express.Router();
 
 router.route('/login').get((req, res, next) => {
@@ -24,6 +26,7 @@ router.route('/login').get((req, res, next) => {
 // });
 
 // router.use(authController.protectAccess);
+
 router
   .route('/newsFeed')
   .get(
@@ -32,8 +35,23 @@ router
     userController.FriendStory,
     async (req, res, next) => {
       const post = await Post.find().populate({ path: 'authorId' });
-      res.render('newsFeed.ejs', {
-        allPosts: post,
+      const userStory = await Story.find({ authorId: req.user.id });
+
+      //   $or: [
+      //     { requestedUserId: { $ne: ['requestedUserId', req.user] } },
+      //     { acceptedUserId: { $ne: ['acceptedUserId', req.user] } },
+      //   ],
+
+      // console.log(res.locals.friendlist);
+      User.findRandom({}, {}, { limit: 6 }, function (err, results) {
+        if (err) next(new AppError(err, 404));
+        if (!results) results = [];
+
+        res.render('newsFeed.ejs', {
+          allPosts: post,
+          friendSuggestion: results,
+          userStory: userStory,
+        });
       });
     }
   );
@@ -47,6 +65,16 @@ router
         path: 'authorId',
       });
       res.render('profile.ejs', { allPosts: post });
+    }
+  );
+
+router
+  .route('/chitChat')
+  .get(
+    authController.protectAccess,
+    userController.FriendList,
+    (req, res, next) => {
+      res.render('chitChat.ejs');
     }
   );
 module.exports = router;

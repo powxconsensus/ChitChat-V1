@@ -5,14 +5,12 @@ const AppError = require('./../utils/appError');
 
 exports.getAllPostComments = catchAsync(async (req, res, next) => {
   const PostId = req.params.postId;
-  const postData = await postModel
-    .findById(PostId)
-    .populate({ path: 'comments' })
-    .select('comments');
-  res.locals.currentComments = postData;
+  const commentData = await commentModel
+    .find({ postId: PostId })
+    .populate({ path: 'authorId' });
   res.status(200).json({
     status: 'Ok',
-    data: postData,
+    data: commentData,
   });
 });
 
@@ -26,14 +24,12 @@ exports.createComment = catchAsync(async (req, res, next) => {
       authorUsername: req.user.username,
       postId: PostId,
     });
-    FindPost.comments.push(commentCreate.id);
+    FindPost.commentCount++;
     FindPost.save();
-    // let query = await postModel.findById(PostId).populate('comments');
-    // console.log(query);
     return res.status(200).json({
       status: 'Ok',
       data: commentCreate,
-      length: FindPost.comments.length,
+      length: FindPost.commentCount,
     });
   }
   next(new AppError('no post found with that Id', 404));
@@ -65,12 +61,11 @@ exports.deleteComment = catchAsync(async (req, res, next) => {
   if (Post) {
     const newComment = await commentModel.findByIdAndDelete(CommentId);
     if (newComment) {
-      const index = Post.comments.indexOf(CommentId);
-      Post.comments.splice(index, 1);
+      Post.commentCount--;
       Post.save();
       return res.status(200).json({
         status: 'success',
-        length: Post.comments.length,
+        length: Post.commentCount,
       });
     }
   }

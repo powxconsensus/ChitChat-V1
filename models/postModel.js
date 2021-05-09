@@ -16,14 +16,11 @@ const postSchema = new mongoose.Schema({
     ref: 'User',
   },
   authorUsername: String,
-  comments: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: 'Comment',
-    },
-  ],
+  commentCount: {
+    type: Number,
+    default: 0,
+  },
   likes: [String],
   image: String,
 });
-
 module.exports = mongoose.model('Post', postSchema);

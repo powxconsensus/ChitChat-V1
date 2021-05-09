@@ -71,7 +71,7 @@ submitPostBTN.addEventListener('submit', async (e) => {
     });
     if (response.data.status == 'OK') {
       window.setTimeout(() => {
-        location.assign('/newsfeed');
+        location.assign(window.location.href);
       }, 50);
     }
   } catch (err) {
@@ -80,113 +80,105 @@ submitPostBTN.addEventListener('submit', async (e) => {
 });
 
 //Posting comment
+
 const commentSection = document.querySelectorAll('.commentSection');
+const appendComment = (
+  commentText,
+  userPhoto,
+  commentId,
+  preOrAppend,
+  whereToPreOrAppend,
+  fromLoggedInUser
+) => {
+  let innerHTML = `<div class="who-commented" style = "background-color : rgb(36, 37, 39)">
+                        <img class="avatar avatar-margin dis-inline-block" src="/users/${userPhoto}" alt="" />
+                        <div class="comment-section dis-inline-block">
+                            ${commentText}
+                        </div>
+
+                        <div class="feature-on-comment">
+                            <div class="row" style="margin-left: 1vw">
+                                <div class="col-4 button-format-comment"> <i class="fas fa-thumbs-up"></i>&nbsp;Like</div>
+                                <div class="col-4 button-format-comment">
+                                    <svg style="margin-bottom: 2px;" xmlns="http://www.w3.org/2000/svg" width="21" height="21"
+                                        fill="currentColor" class="bi bi-reply-fill" viewBox="0 0 16 16">
+                                        <path
+                                            d="M5.921 11.9L1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z" />
+                                    </svg>
+                                    Reply
+                                </div>`;
+  if (fromLoggedInUser) {
+    innerHTML += `<div class="col-4 button-format-comment comment-select" comment-id="${commentId}"><i class="fas fa-trash"></i>&nbsp;Delete</div>`;
+  }
+  innerHTML += `</div>
+                  </div>
+                  <!-- <div class="comment-inherited">tu galat hai</div> -->
+                </div>`;
+  const newDiv = document.createElement('div');
+  newDiv.classList.add('toBeDeleted');
+  newDiv.innerHTML = innerHTML;
+  newDiv
+    .querySelector('.comment-select')
+    .addEventListener('click', Deleting_Comment);
+  if (preOrAppend) {
+    whereToPreOrAppend.querySelector('.Comments-Hide').prepend(newDiv);
+    return;
+  }
+  whereToPreOrAppend.querySelector('.Comments-Hide').append(newDiv);
+};
 for (var i = 0; i < commentSection.length; i++) {
   commentSection[i].addEventListener('click', async (event) => {
     var elementPost = event.target.closest('.post-data-with-information');
     var commentHideSection = elementPost.querySelector('.Comments-Hide').style
       .display;
+    elementPost.querySelector('.Comments-Hide').innerHTML = '';
     if (commentHideSection == 'block') {
       elementPost.querySelector('.Comments-Hide').style.display = 'none';
-      // console.log(elementPost.querySelector('.Comments-Hide').innerHTML);
-      elementPost.querySelector('.Comments-Hide').innerHTML = '';
       return;
     }
     var id = elementPost.getAttribute('data-id');
     const urrl = '/v1/posts/' + id + '/comments';
-    var resp;
+    const loggedInUser = document
+      .querySelector('.loggedInUser')
+      .value.replace(/ /g, '');
     try {
-      const response = await axios({
+      const responseFromServer = await axios({
         method: 'GET',
         url: urrl,
       });
-      try {
-        resp = await axios({
-          method: 'GET',
-          url: '/v1/users/getMe',
-        });
-      } catch (err) {
-        console.log(err.message);
-      }
-      if (response.data.status == 'Ok') {
-        var full = '';
-        var short = response.data.data.comments;
-        for (var i = 0; i < short.length; i++) {
-          var respForAuthor;
-          const urlForAuthor = '/v1/users/' + short[i].authorId;
-          try {
-            respForAuthor = await axios({
-              method: 'GET',
-              url: urlForAuthor,
-            });
-          } catch (err) {
-            console.log(err.message);
-          }
-          if (short[i].authorUsername == resp.data.user.username) {
-            var commentData = `<div class="who-commented " style = "background-color : rgb(36, 37, 39)">
-          <img class="avatar avatar-margin dis-inline-block" src="/users/${respForAuthor.data.data.IdUser.userPhoto}" alt="" />
-          <div class="comment-section dis-inline-block">
-              ${short[i].text}
-          </div>
-
-          <div class="feature-on-comment">
-              <div class="row" style="margin-left: 1vw">
-                  <div class="col-4 button-format-comment"> <i class="fas fa-thumbs-up"></i>&nbsp;Like</div>
-                  <div class="col-4 button-format-comment">
-                      <svg style="margin-bottom: 2px;" xmlns="http://www.w3.org/2000/svg" width="21" height="21"
-                          fill="currentColor" class="bi bi-reply-fill" viewBox="0 0 16 16">
-                          <path
-                              d="M5.921 11.9L1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z" />
-                      </svg>
-                      Reply
-                  </div>
-                  <div class="col-4 button-format-comment comment-select" comment-id="${short[i]._id}"><i class="fas fa-trash"></i>&nbsp;Delete</div>
-              </div>
-          </div>
-
-          <!-- <div class="comment-inherited">tu galat hai</div> -->
-      </div>`;
-            full += commentData;
+      if (responseFromServer.status == 200) {
+        const allCommentOnPost = responseFromServer.data.data;
+        for (let i = 0; i < allCommentOnPost.length; i++) {
+          if (allCommentOnPost[i].authorId.username == loggedInUser) {
+            appendComment(
+              allCommentOnPost[i].text,
+              allCommentOnPost[i].authorId.userPhoto,
+              allCommentOnPost[i]._id,
+              false,
+              elementPost,
+              true
+            );
           } else {
-            var commentData = `<div class="who-commented" style = "background-color : rgb(36, 37, 39)">
-          <img class="avatar avatar-margin dis-inline-block" src="/users/${respForAuthor.data.data.IdUser.userPhoto}" alt="" />
-          <div class="comment-section dis-inline-block">
-              ${short[i].text}
-          </div>
-
-          <div class="feature-on-comment">
-              <div class="row" style="margin-left: 1vw">
-                  <div class="col-4 button-format-comment"> <i class="fas fa-thumbs-up"></i>&nbsp;Like</div>
-                  <div class="col-4 button-format-comment">
-                      <svg style="margin-bottom: 2px;" xmlns="http://www.w3.org/2000/svg" width="21" height="21"
-                          fill="currentColor" class="bi bi-reply-fill" viewBox="0 0 16 16">
-                          <path
-                              d="M5.921 11.9L1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z" />
-                      </svg>
-                      Reply
-                  </div>
-              </div>
-          </div>
-
-          <!-- <div class="comment-inherited">tu galat hai</div> -->
-      </div>`;
-            full += commentData;
+            appendComment(
+              allCommentOnPost[i].text,
+              allCommentOnPost[i].authorId.userPhoto,
+              allCommentOnPost[i]._id,
+              false,
+              elementPost,
+              false
+            );
           }
         }
-        var doc = new DOMParser().parseFromString(full, 'text/html');
-        // console.log(doc.documentElement);
-        // doc.documentElement.getElementsByTagName('BODY').bgColor = 'red';
-        // console.log();
-        // console.log(doc.all[0].getElementsByTagName('body'));
-        elementPost
-          .querySelector('.Comments-Hide')
-          .appendChild(doc.documentElement);
-        Deleting_Comment(elementPost);
+      }
+      if (elementPost.querySelector('.Comments-Hide').innerHTML == '') {
+        elementPost.querySelector('.Comments-Hide').style.display = 'none';
+        return;
       }
       elementPost.querySelector('.Comments-Hide').style.display = 'block';
+      // then add eventlistenser
     } catch (error) {
       console.log(
-        'Error occur while requesting for comments in nesfeed.js on line 167 approx'
+        'Error occur while requesting for comments in nesfeed.js on line 182 approx'
       );
     }
   });
@@ -195,9 +187,17 @@ for (var i = 0; i < commentSection.length; i++) {
 // auto resizing comment textarea
 const allCommentPostData = document.querySelectorAll('.commentPostData');
 for (var i = 0; i < allCommentPostData.length; i++) {
-  allCommentPostData[i].addEventListener('input', function () {
-    this.style.height = 'auto';
-    this.style.height = this.scrollHeight + 'px';
+  allCommentPostData[i].addEventListener('keypress', function (event) {
+    if (event.shiftKey && event.key == 'Enter') {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    }
+    if (!event.shiftKey && event.key == 'Enter') {
+      event.target
+        .closest('.commentPost')
+        .querySelector('.commentPostSubmit')
+        .click();
+    }
   });
 }
 // implement posting comment
@@ -207,7 +207,10 @@ for (var i = 0; i < commentPost.length; i++) {
     event.preventDefault();
     const commentDiv = event.target.closest('.post-data-with-information');
     const id = commentDiv.getAttribute('data-id');
-    const commentData = commentDiv.querySelector('.commentPostData').value;
+    const commentData = commentDiv
+      .querySelector('.commentPostData')
+      .value.replace(/\s+/g, ' ')
+      .trim();
     if (!commentData) return;
     const urrl = '/v1/posts/' + id + '/comments';
     try {
@@ -240,39 +243,35 @@ for (var i = 0; i < commentPost.length; i++) {
 }
 
 // Deleting Comment
-function Deleting_Comment(elementPost) {
-  const postComment = document.querySelectorAll('.comment-select');
-  for (var i = 0; i < postComment.length; i++) {
-    postComment[i].addEventListener('click', async (event) => {
-      var id = event.target
-        .closest('.post-data-with-information')
-        .getAttribute('data-id');
-      var comment_id = event.target
-        .closest('.comment-select')
-        .getAttribute('comment-id');
-      const urrl = '/v1/posts/' + id + '/comments/' + comment_id;
-      try {
-        const response = await axios({
-          method: 'DELETE',
-          url: urrl,
-        });
-        if (response.data.status == 'success') {
-          elementPost.querySelector('.Comments-Hide').style.display = 'none';
-          elementPost.querySelector('.Comments-Hide').innerHTML = '';
-          elementPost
-            .querySelector('.comments-count')
-            .querySelector('.Comments').textContent =
-            response.data.length + ' Comments';
-        }
-      } catch (error) {
-        console.log(
-          'error occured in newsfeed.js on line 229 apporx, while deleting comment'
-        );
-        console.log(error.message);
-      }
+const Deleting_Comment = async (event) => {
+  var elementPost = event.target.closest('.post-data-with-information');
+  var id = elementPost.getAttribute('data-id');
+  var comment_id = event.target
+    .closest('.comment-select')
+    .getAttribute('comment-id');
+  const urrl = '/v1/posts/' + id + '/comments/' + comment_id;
+  try {
+    const response = await axios({
+      method: 'DELETE',
+      url: urrl,
     });
+    if (response.data.status == 'success') {
+      event.target.closest('.toBeDeleted').remove();
+      if (elementPost.querySelector('.Comments-Hide').innerHTML == '') {
+        elementPost.querySelector('.Comments-Hide').style.display = 'none';
+      }
+      elementPost
+        .querySelector('.comments-count')
+        .querySelector('.Comments').textContent =
+        response.data.length + ' Comments';
+    }
+  } catch (error) {
+    console.log(
+      'error occured in newsfeed.js on line 229 apporx, while deleting comment'
+    );
+    console.log(error.message);
   }
-}
+};
 
 // delete post
 const deletePost = document.querySelectorAll('.delete-post');
@@ -289,7 +288,7 @@ for (var i = 0; i < deletePost.length; i++) {
       });
       if (response.data.status == 'OK') {
         window.setTimeout(() => {
-          location.assign('/newsfeed');
+          location.assign(window.location.href);
         }, 50);
       }
     } catch (err) {
@@ -327,6 +326,52 @@ if (storyForm) {
       }
     } catch (err) {
       console.log(err.message);
+    }
+  });
+}
+
+// left block friend Suggestion list
+
+const addFriendOption = document.querySelectorAll('.add-friend-option');
+for (var i = 0; i < addFriendOption.length; i++) {
+  addFriendOption[i].addEventListener('click', async (event) => {
+    const parentDiv = event.target.closest('.addFriendDiv');
+    const userName = parentDiv.querySelector('.show-username').textContent;
+    try {
+      const urll = 'v1/users/addFriend/' + userName + '/';
+      const response = await axios({
+        method: 'PATCH',
+        url: urll,
+      });
+      if (response.data.status == 'Success') {
+        window.setTimeout(() => {
+          location.assign('/newsfeed');
+        }, 50);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+}
+
+const removeFriendOption = document.querySelectorAll('.removeFriend');
+for (var i = 0; i < removeFriendOption.length; i++) {
+  removeFriendOption[i].addEventListener('click', async (event) => {
+    const parentDiv = event.target.closest('.ForFriendRemove');
+    const userName = parentDiv.querySelector('.UserName').textContent;
+    try {
+      const urll = 'v1/users/removeFriend/' + userName + '/';
+      const response = await axios({
+        method: 'PATCH',
+        url: urll,
+      });
+      if (response.data.status == 'Success') {
+        window.setTimeout(() => {
+          location.assign('/profile');
+        }, 50);
+      }
+    } catch (err) {
+      console.log(err);
     }
   });
 }

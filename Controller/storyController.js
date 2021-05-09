@@ -25,13 +25,11 @@ exports.uploadStoryImg = upload.single('storyPhoto');
 exports.resizeStoryPhoto = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
   req.file.filename = `story-${req.user.id}-${Date.now()}.jpeg`;
-
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
     .toFile(`public/story/${req.file.filename}`);
-
   next();
 });
 
@@ -40,17 +38,16 @@ exports.createStory = catchAsync(async (req, res, next) => {
     req.body.storyPhoto = req.file.filename;
   }
   req.body.authorId = req.user.id;
-  var hrTime = process.hrtime();
-  req.body.createdAt = hrTime[0] * 1000000 + hrTime[1] / 1000;
-  const story = await Story.create(req.body);
+  // var hrTime = process.hrtime();
+  req.body.expiresAt = Date.now() + 30 * 1000;
+  // hrTime[0] * 1000000 + hrTime[1] / 1000 + 2 * 60 * 1000000;
+  req.body.authorUserName = req.user.username;
+  req.body.authorFirstName = req.user.firstname;
   const IdUser = await User.findById(req.user.id);
   if (!IdUser) {
     return next(new AppError('No user found with that ID', 404));
-  } else {
-    IdUser.userStory.push(story.id);
-    IdUser.save({ validateBeforeSave: false });
   }
-
+  const story = await Story.create(req.body);
   res.status(200).json({
     status: 'OK',
     data: {
@@ -60,6 +57,7 @@ exports.createStory = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteStory = catchAsync(async (req, res, next) => {
+  // FIX IT
   var id = req.params.id;
   const findStory = await Story.findById(id);
   if (findStory.storyPhoto) {

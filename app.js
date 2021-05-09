@@ -9,10 +9,10 @@ const userRouter = require(`${__dirname}/routes/userRoutes`);
 const viewRouter = require(`${__dirname}/routes/viewRoutes`);
 const postRouter = require(`${__dirname}/routes/postRoutes`);
 const storyRouter = require(`${__dirname}/routes/storyRoutes`);
+const chitChatRouter = require(`${__dirname}/routes/chitChatRoutes`);
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./Controller/errorController');
 const bodyParser = require('body-parser');
-
 const app = express();
 
 // setting secure header
@@ -48,6 +48,7 @@ app.use('/', viewRouter);
 app.use('/v1/story/', storyRouter);
 app.use('/v1/users/', userRouter);
 app.use('/v1/posts/', postRouter);
+app.use('/v1/chitChat/', chitChatRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this Server`, 404));

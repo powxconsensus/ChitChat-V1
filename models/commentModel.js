@@ -21,5 +21,5 @@ const commentSchema = new mongoose.Schema({
   authorUsername: String,
   likes: [String],
 });
-
+commentSchema.index({ postId: 1 });
 module.exports = mongoose.model('Comment', commentSchema);

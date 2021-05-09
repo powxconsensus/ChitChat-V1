@@ -7,6 +7,7 @@ const Story = require('./../models/storyModel');
 const multer = require('multer');
 const sharp = require('sharp');
 const { findById } = require('../models/userModel');
+const userFriends = require('./../models/userFriends');
 
 // const { post } = require('../routes/userRoutes');
 
@@ -146,6 +147,17 @@ exports.CreateUser = (req, res) => {
 };
 
 exports.GetUser = catchAsync(async (req, res, next) => {
+  if (req.params.type == 'username') {
+    const searchedUser = await User.find({ username: req.params.id });
+    const searchedUserId = searchedUser[0].id;
+    return res.status(200).json({
+      status: 'OK',
+      data: {
+        searchedUserId,
+      },
+    });
+  }
+
   const IdUser = await User.findById(req.params.id);
 
   if (!IdUser) {
@@ -174,16 +186,38 @@ exports.DeleteUser = catchAsync(async (req, res, next) => {
 });
 
 exports.addFriend = catchAsync(async (req, res, next) => {
-  const userId = req.params.id; // friends id
-  const searchedUser = await User.findById(userId); // friend User
-  if (searchedUser) {
-    const index = req.user.friendList.indexOf(userId);
-    if (index == -1) {
-      req.user.friendList.push(userId);
-      searchedUser.friendList.push(req.user.id);
-      req.user.save({ validateBeforeSave: false });
-      searchedUser.save({ validateBeforeSave: false });
+  const userName = req.params.userName.replace(/ /g, '');
+  const searchedUser = await User.find({ username: userName }); // friend User
+  if (searchedUser[0]) {
+    const userId = searchedUser[0].id; // friends id
+    if (userId == req.user.id) {
+      return res.status(404).json({
+        status: 'you cannot be friend of yourself here in ChiChat',
+      });
     }
+    const toBeFriend = await User.findById(userId);
+    const checkBeforeAdd = await userFriends.find({
+      $or: [
+        {
+          requestedUserId: { $eq: req.user.id },
+          acceptedUserId: { $eq: userId },
+        },
+        {
+          acceptedUserId: { $eq: req.user.id },
+          requestedUserId: { $eq: userId },
+        },
+      ],
+    });
+    console.log(checkBeforeAdd);
+    if (checkBeforeAdd.length === 0) {
+      const roomId = userId + req.user.id + Date.now();
+      const newUserFriends = await userFriends.create({
+        requestedUserId: req.user.id,
+        acceptedUserId: userId,
+        chatRoomId: roomId,
+      });
+    }
+
     return res.status(200).json({
       status: 'Success',
     });
@@ -193,19 +227,29 @@ exports.addFriend = catchAsync(async (req, res, next) => {
 });
 
 exports.removeFriend = catchAsync(async (req, res, next) => {
-  const userId = req.params.id;
-  const searchedUser = await User.findById(userId);
-  if (searchedUser) {
+  const userName = req.params.userName.replace(/ /g, '');
+  const searchedUser = await User.find({ username: userName });
+  if (searchedUser[0]) {
+    const userId = searchedUser[0].id;
+    const toBeNotFriend = await User.findById(userId);
     const CurrentUser = req.user;
-    var index = CurrentUser.friendList.indexOf(userId);
-    if (index > -1) {
-      CurrentUser.friendList.splice(index, 1);
-      CurrentUser.save({ validateBeforeSave: false });
-      var new_id = searchedUser.friendList.indexOf(req.user.id);
-      if (new_id > -1) {
-        searchedUser.friendList.splice(new_id, 1);
-        searchedUser.save({ validateBeforeSave: false });
-      }
+    const checkBeforeAdd = await userFriends.find({
+      $or: [
+        {
+          requestedUserId: { $eq: req.user.id },
+          acceptedUserId: { $eq: userId },
+        },
+        {
+          acceptedUserId: { $eq: req.user.id },
+          requestedUserId: { $eq: userId },
+        },
+      ],
+    });
+    if (checkBeforeAdd.length != 0) {
+      const deletedUserFriends = await userFriends.findByIdAndRemove(
+        checkBeforeAdd[0].id
+      );
+      console.log(deletedUserFriends);
     }
     return res.status(200).json({
       status: 'Success',
@@ -221,135 +265,114 @@ exports.getMe = (req, res) => {
   });
 };
 
+// Should be optimize in future
 exports.FriendList = catchAsync(async (req, res, next) => {
-  var friends = [];
-  var currentUser = req.user;
-  for (var i = 0; i < currentUser.friendList.length; i++) {
-    var obj = await User.findById(currentUser.friendList[i]);
-    if (obj) {
-      friends.push(obj);
-    }
-  }
-  res.locals.friendlist = friends;
+  res.locals.friendlist = await userFriends
+    .find({
+      $or: [
+        {
+          requestedUserId: { $eq: req.user.id },
+        },
+        {
+          acceptedUserId: { $eq: req.user.id },
+        },
+      ],
+    })
+    .populate('requestedUserId acceptedUserId');
+  // console.log(res.locals.friendlist);
   next();
 });
-// Should be optimize in future
+
 exports.FriendStory = catchAsync(async (req, res, next) => {
   var friendStory = [];
+  const friendLists = res.locals.friendlist;
   var currentUser = req.user;
-  for (var i = 0; i < currentUser.friendList.length; i++) {
-    var obj = await User.findById(currentUser.friendList[i]);
-    if (obj) {
-      var arr = [];
-      for (var j = 0; j < obj.userStory.length; j++) {
-        var findStory = await Story.findById(obj.userStory[j]);
-        if (!findStory) {
-          arr.push(obj.userStory[j]);
-        }
-      }
-      for (var j = 0; j < arr.length; j++) {
-        var index = obj.userStory.indexOf(arr[j]);
-        if (index > -1) {
-          obj.userStory.splice(index, 1);
-        }
-      }
-      obj.save({ validateBeforeSave: false });
-      obj = await User.findById(currentUser.friendList[i]).populate({
-        path: 'userStory',
+  for (var i = 0; i < friendLists.length; i++) {
+    const acceptedUserId = friendLists[i].acceptedUserId.id;
+    const requestedUserId = friendLists[i].requestedUserId.id;
+    var obj = [];
+    if (acceptedUserId == req.user.id) {
+      obj = await Story.find({
+        authorId: requestedUserId,
       });
+    } else {
+      obj = await Story.find({
+        authorId: acceptedUserId,
+      });
+    }
 
-      Arr = [];
-      for (var j = 0; j < obj.userStory.length; j++) {
-        if (
-          Math.floor(Date.now() * 1000 - obj.userStory[j].createdAt) >=
-          1615880199999999
-        ) {
-          var id = obj.userStory[j].id;
-          Arr.push(id);
-          const findStory = await Story.findById(id);
-          if (findStory) {
-            if (findStory.storyPhoto) {
-              fs.unlink(
-                `${__dirname}/../public/story/${findStory.storyPhoto}`,
-                (err) => {
-                  if (err) {
-                    throw err;
-                  }
-                }
-              );
-            }
-            const story = await Story.findByIdAndDelete(id);
-          }
-        }
-      }
-      for (var j = 0; j < Arr.length; j++) {
-        var index = obj.userStory.indexOf(Arr[j]);
-        if (index > -1) {
-          obj.userStory.splice(index, 1);
-        }
-      }
-      obj.save({ validateBeforeSave: false });
-      obj = await User.findById(currentUser.friendList[i]).populate({
-        path: 'userStory',
-      });
+    if (obj.length != 0) {
       friendStory.push(obj);
     }
   }
   res.locals.friendStory = friendStory;
-
-  // works same as above for current user
-  currentUser = req.user;
-  var arr = [];
-  for (var j = 0; j < currentUser.userStory.length; j++) {
-    var findStory = await Story.findById(currentUser.userStory[j]);
-    if (!findStory) {
-      arr.push(currentUser.userStory[j]);
-    }
-  }
-  for (var j = 0; j < arr.length; j++) {
-    var index = currentUser.userStory.indexOf(arr[j]);
-    if (index > -1) {
-      currentUser.userStory.splice(index, 1);
-    }
-  }
-  currentUser.save({ validateBeforeSave: false });
-  currentUser = await User.findById(currentUser.id).populate({
-    path: 'userStory',
-  });
-  Arr = [];
-  for (var j = 0; j < currentUser.userStory.length; j++) {
-    if (
-      Math.floor(Date.now() * 1000 - currentUser.userStory[j].createdAt) >=
-      1615880199999999
-    ) {
-      var id = currentUser.userStory[j].id;
-      Arr.push(id);
-      const findStory = await Story.findById(id);
-      if (findStory) {
-        if (findStory.storyPhoto) {
-          fs.unlink(
-            `${__dirname}/../public/story/${findStory.storyPhoto}`,
-            (err) => {
-              if (err) {
-                throw err;
-              }
-            }
-          );
-        }
-        const story = await Story.findByIdAndDelete(id);
-      }
-    }
-  }
-  for (var j = 0; j < Arr.length; j++) {
-    var index = currentUser.userStory.indexOf(Arr[j]);
-    if (index > -1) {
-      currentUser.userStory.splice(index, 1);
-    }
-  }
-  currentUser.save({ validateBeforeSave: false });
-  currentUser = await User.findById(currentUser.id).populate({
-    path: 'userStory',
-  });
-  req.user = currentUser;
   next();
+});
+
+const chitChatModel = require('./../models/chitChatModel');
+exports.createUserFriendsChat = catchAsync(async (req, res, next) => {
+  const recieverUserId = await User.find({
+    username: req.body.recieverUserName,
+  });
+  if (recieverUserId) {
+    const createdChat = await chitChatModel.create({
+      message: req.body.chatFromYou,
+      sender: req.user.id,
+      reciever: recieverUserId[0].id,
+      createdDate: Date.now(),
+    });
+    return res.status(200).json({
+      status: 'success',
+      data: createdChat,
+    });
+  }
+  res.status(404).json({
+    status: 'fail',
+    message: 'no reciever found',
+  });
+});
+
+exports.getUserFriendsChat = catchAsync(async (req, res, next) => {
+  const last50Chat = await chitChatModel
+    .find({
+      $or: [
+        {
+          sender: req.user.id,
+          reciever: req.query.recieverUserId,
+        },
+        {
+          sender: req.query.recieverUserId,
+          reciever: req.user.id,
+        },
+      ],
+    })
+    .sort({ createdDate: 1 });
+  // console.log(last50Chat);
+  res.status(200).json({
+    status: 'OK',
+    last50Chat,
+  });
+});
+
+exports.deleteUserFriendsChat = catchAsync(async (req, res, next) => {
+  const deletedChat = await chitChatModel.findOneAndDelete({
+    _id: req.query.chatId,
+    sender: req.user.id,
+  });
+  if (deletedChat) {
+    return res.status(200).json({
+      status: 'OK',
+    });
+  }
+  res.status(401).json({
+    status: 'fail',
+    message: 'you can only delete chat send by you',
+  });
+});
+exports.editUserFriendsChat = catchAsync(async (req, res, next) => {
+  console.log('edited');
+  // const last50Chat = await
+  res.status(200).json({
+    status: 'OK',
+  });
 });

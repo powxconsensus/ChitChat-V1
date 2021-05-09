@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const randomData = require('mongoose-simple-random');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -63,21 +64,10 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
-  friendList: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-    },
-  ],
   userPhoto: String,
   coverPhoto: String,
-  userStory: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: 'Story',
-    },
-  ],
 });
+userSchema.plugin(randomData);
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();

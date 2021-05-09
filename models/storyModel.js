@@ -1,17 +1,19 @@
 const mongoose = require('mongoose');
-const fs = require('fs');
 
 const storySchema = new mongoose.Schema({
   storyPhoto: String,
   content: String,
-  createdAt: {
+  expiresAt: {
     type: Number,
-    default: Date.now(),
+    default: Date.now() + 60 * 1000,
   },
+  authorFirstName: String,
+  authorUserName: String,
   authorId: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
 });
 storySchema.index({ authorId: 1 });
+storySchema.index({ expiresAt: 1 });
 module.exports = mongoose.model('Story', storySchema);

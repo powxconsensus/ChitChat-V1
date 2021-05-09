@@ -42,12 +42,12 @@
     </div>
     <div class="comments-count">
       <a data-wow="2" class="Comments commentSection on-hover-cursor">
-        <%= list.comments.length %> Comments
+        <%= list.commentCount %> Comments
       </a>
     </div>
     <hr class="dropdown-divider" />
-    <div class="row" style="margin-left: 1vw">
-      <div class="col-4 on-hover-cursor add-on noselect like-color-toggle" style="margin-left: -10px">
+    <div class="row">
+      <div class="col-4 on-hover-cursor add-on noselect like-color-toggle">
         <% if (list.likes.indexOf(user.username)> -1) {%>
           <div class="liked-already">
             <i class="fas fa-thumbs-up"></i>&nbsp;Like
@@ -76,6 +76,7 @@
     </div>
     <hr class="dropdown-divider" style="margin-top: -0.5px;" />
     <div class="Comments-Hide">
+
     </div>
   </div>
   <% } %>
