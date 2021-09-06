@@ -15,7 +15,7 @@ router.route('/login').get((req, res, next) => {
   let token;
   if (req.cookies.jwt) token = req.cookies.jwt;
   if (!token) res.render('authorization.ejs');
-  else res.redirect('/newsFeed');
+  else res.redirect('/');
 });
 // router.route('/register').get((req, res, next) => {
 //   res.render('register.ejs');
@@ -28,7 +28,7 @@ router.route('/login').get((req, res, next) => {
 // router.use(authController.protectAccess);
 
 router
-  .route('/newsFeed')
+  .route('/')
   .get(
     authController.protectAccess,
     userController.FriendList,

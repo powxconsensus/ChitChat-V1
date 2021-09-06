@@ -15,7 +15,7 @@ loginSubmit.addEventListener('submit', async (event) => {
     });
     if (ress.data.status == 'OK') {
       window.setTimeout(() => {
-        location.assign('/newsfeed');
+        location.assign('/');
       }, 50);
     }
   } catch (err) {
@@ -71,7 +71,7 @@ function signupFormPage2Func(email, username, password, passwordConfirm) {
       });
       if (response.status == 201) {
         window.setTimeout(() => {
-          location.assign('/newsfeed');
+          location.assign('/');
         }, 50);
       } else {
         throw 'check data that you have provided';

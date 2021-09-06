@@ -364,7 +364,7 @@ exports.deleteUserFriendsChat = catchAsync(async (req, res, next) => {
       status: 'OK',
     });
   }
-  res.status(401).json({
+  res.status(402).json({
     status: 'fail',
     message: 'you can only delete chat send by you',
   });

@@ -129,8 +129,8 @@ const appendComment = (
 for (var i = 0; i < commentSection.length; i++) {
   commentSection[i].addEventListener('click', async (event) => {
     var elementPost = event.target.closest('.post-data-with-information');
-    var commentHideSection = elementPost.querySelector('.Comments-Hide').style
-      .display;
+    var commentHideSection =
+      elementPost.querySelector('.Comments-Hide').style.display;
     elementPost.querySelector('.Comments-Hide').innerHTML = '';
     if (commentHideSection == 'block') {
       elementPost.querySelector('.Comments-Hide').style.display = 'none';
@@ -321,7 +321,7 @@ if (storyForm) {
       if (response.data.status == 'OK') {
         document.querySelector('.upload-story-confirm').style.display = 'none';
         window.setTimeout(() => {
-          location.assign('/newsfeed');
+          location.assign('/');
         }, 50);
       }
     } catch (err) {
@@ -345,7 +345,7 @@ for (var i = 0; i < addFriendOption.length; i++) {
       });
       if (response.data.status == 'Success') {
         window.setTimeout(() => {
-          location.assign('/newsfeed');
+          location.assign('/');
         }, 50);
       }
     } catch (err) {

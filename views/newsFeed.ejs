@@ -12,15 +12,17 @@
       </div>
       <div class="suggestionList">
         <% for(var list of friendSuggestion) { %>
+          <% if (list._id != user.id) {%>
           <div class="friend-list-item addFriendDiv">
             <img class="avatar avatar-margin dis-inline-block" src="<%= `users/${list.userPhoto}` %>" alt="" />
             <span class="dis-inline-block show-username">
               <%= list.username%>
             </span>
             <span class="add-friend-option">
-              Add friend
+              Add friend 
             </span>
           </div>
+          <% } %>
           <% }%>
       </div>
     </div>

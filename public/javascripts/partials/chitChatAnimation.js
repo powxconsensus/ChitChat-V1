@@ -1,14 +1,15 @@
 const arr = [
-  'Hello, kya hal hai',
-  'badiya hai apna batoa, kya ker rahi ho',
-  'kuch nahi bash book padh rahi hmm auor tum',
-  'kuch nahi bas end sem ke liye prepare ker raha hmm',
-  'accha, end sem aa gaya kya tumhara',
-  'yep hmm aa gaya, college wale pareshan kerke rakhke hai',
-  'itna koin pareshan kerta hai',
-  'wahi na,inne koin samjhe',
-  'chodo unko unka toh vo hii kam hai',
-  'wahi na, mei toh full ignore kerta un chutiye ko',
+  'Hello, How are you?',
+  'Hey Mike, fine and you?',
+  'here as well, after a long we are chatting.',
+  'Yes, What do you do these days?',
+  'focusing on office work, and now leading a project',
+  'nice, which project do you leading?',
+  'A Social Media Website',
+  'Oh 🤩 great, I will be one to use it.',
+  'Ok thanks',
+  'Welcome bro, Bye bro for now, I will talk to you later as my boss call is ringing.',
+  'Ok bro, bye, have a night day',
 ];
 
 var ii = 0;
